@@ -36,10 +36,11 @@ public class Stream_06_Test {
     // TODO compléter la méthode pour que le calcul de la somme soit fait avec une instance d'Accumulator
     private long sumWithAccumulator(long n) {
         // TODO créer une instance de l'accumulateur (classe Accumulator)
-        Accumulator acc = null;
+        Accumulator acc = new Accumulator();
         LongStream longStream = LongStream.rangeClosed(1, n - 1);
 
         // TODO pour chaque élément de longStream, invoquer la méthode add de l'accumulateur (acc)
+        longStream.forEach(acc::add);
 
         return acc.total;
     }
@@ -58,7 +59,13 @@ public class Stream_06_Test {
 
     // TODO reprendre le code de sumWithAccumulator et rendre le traitement parallèle (.parallel())
     private long sumWithAccumulatorParallel(long n) {
-        return 0;
+        Accumulator acc = new Accumulator();
+        LongStream longStream = LongStream.rangeClosed(1, n - 1);
+
+        // TODO pour chaque élément de longStream, invoquer la méthode add de l'accumulateur (acc)
+        longStream.parallel().forEach(acc::add);
+
+        return acc.total;
     }
 
     // TODO Exécuter le test
