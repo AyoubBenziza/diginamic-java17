@@ -6,8 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
@@ -69,11 +68,15 @@ public class Stream_08_Test {
 
         // TODO utiliser la méthode java.nio.file.Files.lines pour créer un stream de lignes du fichier naissances_depuis_1900.csv
         // Le bloc try(...) permet de fermer (close()) le stream après utilisation
-        try (Stream<String> lines = null) {
+        try (Stream<String> lines = Files.lines(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(NAISSANCES_DEPUIS_1900_CSV)).getPath()))) {
 
             // TODO construire une MAP (clé = année de naissance, valeur = somme des nombres de naissance de l'année)
-            Map<String, Integer> result = null;
-
+            Map<String, Integer> result = lines
+                .skip(1)
+                .map(line -> line.split(";"))
+                .peek(data -> System.out.println(Arrays.toString(data))) // print out the data array
+                .map(data -> new Naissance(data[1], data[2], Integer.valueOf(data[3])))
+                .collect(groupingBy(Naissance::getAnnee, summingInt(Naissance::getNombre)));
 
             assertThat(result.get("2015"), is(8097));
             assertThat(result.get("1900"), is(5130));
@@ -85,10 +88,14 @@ public class Stream_08_Test {
 
         // TODO utiliser la méthode java.nio.file.Files.lines pour créer un stream de lignes du fichier naissances_depuis_1900.csv
         // Le bloc try(...) permet de fermer (close()) le stream après utilisation
-        try (Stream<String> lines = null) {
+        try (Stream<String> lines = Files.lines(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(NAISSANCES_DEPUIS_1900_CSV)).getPath()))) {
 
             // TODO trouver l'année où il va eu le plus de nombre de naissance
-            Optional<Naissance> result = null;
+            Optional<Naissance> result = lines
+                .skip(1)
+                .map(line -> line.split(";"))
+                .map(data -> new Naissance(data[1], data[2], Integer.valueOf(data[3])))
+                .max(Comparator.comparing(Naissance::getNombre));
 
 
             assertThat(result.get().getNombre(), is(48));
@@ -101,11 +108,16 @@ public class Stream_08_Test {
     public void test_collectingAndThen() throws IOException {
         // TODO utiliser la méthode java.nio.file.Files.lines pour créer un stream de lignes du fichier naissances_depuis_1900.csv
         // Le bloc try(...) permet de fermer (close()) le stream après utilisation
-        try (Stream<String> lines = null) {
+        try (Stream<String> lines = Files.lines(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(NAISSANCES_DEPUIS_1900_CSV)).getPath()))) {
 
             // TODO construire une MAP (clé = année de naissance, valeur = maximum de nombre de naissances)
             // TODO utiliser la méthode "collectingAndThen" à la suite d'un "grouping"
-            Map<String, Naissance> result = null;
+            Map<String, Naissance> result = lines
+                .skip(1)
+                .map(line -> line.split(";"))
+                .map(data -> new Naissance(data[1], data[2], Integer.valueOf(data[3])))
+                .collect(groupingBy(Naissance::getAnnee,
+                    collectingAndThen(maxBy(Comparator.comparing(Naissance::getNombre)), Optional::get)));
 
             assertThat(result.get("2015").getNombre(), is(38));
             assertThat(result.get("2015").getJour(), is("20150909"));
@@ -124,11 +136,12 @@ public class Stream_08_Test {
     @Test
     public void test_pizzaData() throws IOException {
         // TODO utiliser la méthode java.nio.file.Files.list pour parcourir un répertoire
-
+        try(Stream<Path> paths = Files.list(Paths.get(DATA_DIR))) {
         // TODO trouver la pizza la moins chère
         String pizzaNamePriceMin = null;
 
         assertThat(pizzaNamePriceMin, is("L'indienne"));
+        }
 
     }
 
