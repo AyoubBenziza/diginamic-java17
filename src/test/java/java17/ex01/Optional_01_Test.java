@@ -34,7 +34,7 @@ public class Optional_01_Test {
         assertThat(optPerson.isPresent(), is(true));
         
         // TODO afficher la personne en question si l'optional contient une personne
-        optPerson.ifPresent(p -> System.out.println(p));
+        optPerson.ifPresent(System.out::println);
     }
 
     @Test(expected=NotPresentException.class)
