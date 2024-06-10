@@ -1,0 +1,3 @@
+Id: 4
+Name: L'indienne
+Price: 8

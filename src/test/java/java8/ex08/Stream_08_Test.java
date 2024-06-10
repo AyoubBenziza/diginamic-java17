@@ -1,11 +1,13 @@
 package java8.ex08;
 
+import java8.data.domain.Pizza;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -22,7 +24,7 @@ public class Stream_08_Test {
     // Chemin vers un fichier de données des naissances
     private static final String NAISSANCES_DEPUIS_1900_CSV = "./naissances_depuis_1900.csv";
 
-    private static final String DATA_DIR = "./pizza-data";
+    private static final String DATA_DIR = "src/main/resources/pizza-data/";
 
 
     // Structure modélisant les informations d'une ligne du fichier
@@ -136,18 +138,48 @@ public class Stream_08_Test {
     @Test
     public void test_pizzaData() throws IOException {
         // TODO utiliser la méthode java.nio.file.Files.list pour parcourir un répertoire
-        try(Stream<Path> paths = Files.list(Paths.get(DATA_DIR))) {
-        // TODO trouver la pizza la moins chère
-        String pizzaNamePriceMin = null;
+        Data data = new Data();
+        List<Pizza> pizzas = data.getPizzas();
 
-        assertThat(pizzaNamePriceMin, is("L'indienne"));
+        // TODO Optionel
+        // TODO Créer un test qui exporte des données new Data().getPizzas() dans des fichiers
+        // TODO 1 fichier par pizza
+        // TODO le nom du fichier est de la forme ID.txt (ex. 1.txt, 2.txt)
+        try{
+            for (Pizza pizza : pizzas) {
+                Path filePath = Paths.get(DATA_DIR + pizza.getId() + ".txt");
+                String pizzaDetails = pizza.toString(); // Assuming Pizza has a suitable toString method
+
+                Files.write(filePath, pizzaDetails.getBytes(), StandardOpenOption.CREATE);
+            }
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+
+
+        try(Stream<Path> paths = Files.list(Paths.get(DATA_DIR))) {
+            // TODO trouver la pizza la moins chère
+            String pizzaNamePriceMin1 = paths
+                    .map(path -> {
+                        try {
+                            List<String> lines = Files.readAllLines(path);
+                            return new Pizza(
+                                    Integer.valueOf(lines.get(0).replace("Id: ","")),
+                                    lines.get(1).replace("Name: ",""),
+                                    Integer.valueOf(lines.get(2).replace("Price: ","")));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return null;
+                    })
+                    .min(Comparator.comparing(Pizza::getPrice))
+                    .map(Pizza::getName)
+                    .orElse(null);
+
+            assertThat(pizzaNamePriceMin1, is("L'indienne"));
         }
 
     }
 
-    // TODO Optionel
-    // TODO Créer un test qui exporte des données new Data().getPizzas() dans des fichiers
-    // TODO 1 fichier par pizza
-    // TODO le nom du fichier est de la forme ID.txt (ex. 1.txt, 2.txt)
 
 }
